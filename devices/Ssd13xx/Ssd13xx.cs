@@ -122,6 +122,11 @@ namespace Iot.Device.Ssd13xx
         /// </summary>
         public IFont Font { get; set; }
 
+        /// <summary>
+        /// Gets or sets the offset for sh1106 controller.
+        /// </summary>
+        public int Offset { get; set; } = 0;
+
         private GpioController _gpioController;
         private int _resetPin;
         private bool _shouldDispose;
@@ -136,12 +141,14 @@ namespace Iot.Device.Ssd13xx
         /// reset pin).</param>
         /// <param name="gpio">Gpio Controller.</param>
         /// <param name="shouldDispose">True to dispose the GpioController.</param>
+        /// <param name="offset">Horizontal offset (particular for Sh1106 controller).</param>
         public Ssd13xx(
             I2cDevice i2cDevice,
             DisplayResolution resolution = DisplayResolution.OLED128x64,
             int resetPin = -1,
             GpioController gpio = null,
-            bool shouldDispose = true)
+            bool shouldDispose = true,
+            int offset = 0)
         {
             _resetPin = resetPin;
             if (resetPin >= 0)
@@ -173,11 +180,13 @@ namespace Iot.Device.Ssd13xx
                     break;
             }
 
+            Offset = offset;
+
             Pages = (byte)(Height / 8);
 
             // Adding 4 bytes make it SSH1106 IC OLED compatible
-            _genericBuffer = new byte[(Pages * Width) + 4];
-            _pageData = new byte[Width + 1];
+            _genericBuffer = new byte[(Pages * Width) + Offset];
+            _pageData = new byte[Width + 1 + Offset];
         }
 
         /// <summary>
@@ -553,7 +562,7 @@ namespace Iot.Device.Ssd13xx
                 _i2cDevice.Write(_pageCmd);
 
                 _pageData[0] = 0x40; // is data
-                Array.Copy(_genericBuffer, i * Width, _pageData, 1, Width);
+                Array.Copy(_genericBuffer, i * Width, _pageData, 1 + Offset, Width);
                 _i2cDevice.Write(_pageData);
             }
         }
