@@ -11,7 +11,7 @@ namespace Iot.Device.Ds18b20
         /// <summary>
         /// Reference family code.
         /// </summary>
-        FamilyCode = 0x28,
+        FamilyCode = 0x22,
 
         /// <summary>
         /// Command to address specific device on network.
